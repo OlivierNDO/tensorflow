@@ -1,1 +1,1 @@
-data processing functions in R
+tensorflow scripts - some original, some tutorials
