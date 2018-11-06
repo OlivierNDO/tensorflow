@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Import Data
 ####################################################################
-folder_path = "C:/Users/user/Desktop/plasticc/"
+folder_path = ".../plasticc/"
 train = pd.read_csv(folder_path + "training_set.csv")
 train_meta = pd.read_csv(folder_path + "training_set_metadata.csv")
 #test = pd.read_csv(folder_path + "test_set.csv")
