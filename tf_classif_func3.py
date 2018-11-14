@@ -241,7 +241,6 @@ def fwd_net(trn_x, val_x, tst_x, trn_y, val_y,
         sec_elapsed = (np.float64(end_tm) - np.float64(start_tm))
         print('\n\nExecution Time: ' + seconds_to_time(sec_elapsed))
         return output_df
-        
 
 train, valid = titanic_proc(csv_path = 'C:/Users/user/Desktop/titanic/train.csv', train_test = 'train', cv_split = True)
 test = titanic_proc(csv_path = 'C:/Users/user/Desktop/titanic/test.csv', train_test = 'test')
