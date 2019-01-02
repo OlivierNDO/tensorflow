@@ -21,6 +21,8 @@ from keras.utils import multi_gpu_model
 from keras import backend as K
 from keras.models import load_model
 
+script_start = time.time()
+
 # User Input
 ##############################################################################
 glove_txt_file = 'D:/glove/glove.840B.300d.txt'
@@ -29,6 +31,32 @@ test_file = 'D:/quora/data/test.csv'
 
 # Define Functions
 ##############################################################################
+def seconds_to_time(sec):
+    if (sec // 3600) == 0:
+        HH = '00'
+    elif (sec // 3600) < 10:
+        HH = '0' + str(int(sec // 3600))
+    else:
+        HH = str(int(sec // 3600))
+    min_raw = (np.float64(sec) - (np.float64(sec // 3600) * 3600)) // 60
+    if min_raw < 10:
+        MM = '0' + str(int(min_raw))
+    else:
+        MM = str(int(min_raw))
+    sec_raw = (sec - (np.float64(sec // 60) * 60))
+    if sec_raw < 10:
+        SS = '0' + str(int(sec_raw))
+    else:
+        SS = str(int(sec_raw))
+    return HH + ':' + MM + ':' + SS + ' (hh:mm:ss)'
+
+def sec_to_time_elapsed(end_tm, start_tm, return_time = False):
+    sec_elapsed = (np.float64(end_tm) - np.float64(start_tm))
+    if return_time:
+        return seconds_to_time(sec_elapsed)
+    else:
+        print('Execution Time: ' + seconds_to_time(sec_elapsed))
+
 def load_glove(glove_file_path, progress_print = 5000, encoding_type = 'utf8'):
     """load glove (Stanford NLP) file and return dictionary"""
     num_lines = sum(1 for line in open(glove_txt_file, encoding = encoding_type))
@@ -58,6 +86,7 @@ def clean_tokenize(some_string):
 def glove_tokenize_proc(csv_file_path, csv_txt_col, glove_file_path, vocab_size, maxlen, y_col = None):
     """ - read csv file with text in 'csv_txt_col' column"""
     """ - process into 300-dimension embeddings based on Stanford glove embeddings"""
+    start_tm = time.time()
     glove_dict = load_glove(glove_file_path)
     df = pd.read_csv(csv_file_path)
     df[csv_txt_col] = df[csv_txt_col].apply(clean_tokenize)
@@ -73,6 +102,8 @@ def glove_tokenize_proc(csv_file_path, csv_txt_col, glove_file_path, vocab_size,
             embed_vec = glove_dict.get(x)
             if embed_vec is not None:
                 embed_wt_matrix[i] = embed_vec
+    end_tm = time.time()
+    sec_to_time_elapsed(end_tm, start_tm)
     if y_col:
         y_data = [y for y in df[y_col]]
         return y_data, x_data, embed_wt_matrix
@@ -87,6 +118,8 @@ train_y, train_x, embed_wts = glove_tokenize_proc(csv_file_path = train_file,
                                                   vocab_size = 50000,
                                                   maxlen = 50,
                                                   y_col = 'target')
+
+proc_end = time.time()
 
 
 # Training on Two GPUs
@@ -136,6 +169,12 @@ parallel_model.fit(train_x,
                    class_weight = class_weight,
                    callbacks = [check_point, early_stop])
 
+train_end = time.time()
+
+
+sec_to_time_elapsed(train_end, proc_end)
+
+
 """
 loaded_model = load_model(file_path)
 test_prediction = loaded_model.predict(test_data)
@@ -143,3 +182,11 @@ test_prediction_binary = [int(np.round(i,0)) for i in test_prediction]
 test_prediction_df = pd.DataFrame({'qid': [i for i in test['qid']],
                                    'prediction': test_prediction_binary})
 """
+
+
+# Time Tracking
+# Data Proc Time:
+sec_to_time_elapsed(proc_end, script_start)
+
+
+
